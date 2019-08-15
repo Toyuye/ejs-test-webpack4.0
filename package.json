@@ -29,11 +29,20 @@
     "postcss-url": "^8.0.0",
     "sass-loader": "^7.2.0",
     "style-loader": "^1.0.0",
+    "terser-webpack-plugin": "^1.4.1",
     "url-loader": "^2.1.0",
     "webpack": "^4.39.1",
     "webpack-bundle-analyzer": "^3.4.1",
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.8.0",
     "webpack-merge": "^4.2.1"
-  }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8",
+    "iOS >= 8",
+    "Firefox >= 20",
+    "Android > 4.4"
+  ]
 }

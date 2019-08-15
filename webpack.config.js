@@ -1,11 +1,52 @@
+
 const webpack = require('webpack')
+const webpackMerge = require('webpack-merge')
+const fs = require('fs')
 const path = require('path')
 const HtmlwebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CopyWebapckPlugin = require('copy-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 
+let  html_ejs_plugin = function(templateArr=[]) {
+    let ejsArr = fs.readdirSync('./src/page')
+    for(let i=0; i < ejsArr.length; i++) {
+        if(/\.ejs$/.test(ejsArr[i])){
+            let filePath = ejsArr[i];
+            let filename = filePath.substring(filePath.lastIndexOf('\/')+1,filePath.lastIndexOf('.'));
+            let conf = {
+                template:`./src/page/${filePath}`,
+                filename:`${filename}.html`,
+                inject: true,
+                hash: true,
+                minify:{
+                    removeAttributeQuotes:true,
+                    collapseWhitespace:true,
+                }
+            }
+            templateArr.push(new HtmlwebpackPlugin(conf))
+        }
+        
+    }
+    return templateArr
+}
+let entries = function(map={}) {
+    let jsArr = fs.readdirSync('./src/js')
+    for(let i=0;i<jsArr.length; i++) {
+        if(/\.js/.test(jsArr[i])) {
+            let filePath = jsArr[i]
+            let filename = filePath.substring(filePath.lastIndexOf('\/')+1,filePath.lastIndexOf('.'));
+            map[filename] = `./src/js/${filePath}`
+        }
+    }
+    console.log(map)
+    return map
+}
+
+
+entries()
 module.exports = (env, argv)=>{
     if(argv.mode === 'development') {
         console.log('开发模式')
@@ -40,28 +81,25 @@ module.exports = (env, argv)=>{
             port:'8888',
             open:true,
         },
-        entry:{
-            index:'./src/js/index.js'
-        },
+        entry:webpackMerge(entries(), {}),
         output:{
             path: path.resolve(__dirname, 'dist'),
             filename: 'static/page/[name].js',
             publicPath: argv.mode==="development" ? '/' : "./"
         },
-        plugins:[
+        optimization:{
+            minimizer:[
+                new TerserPlugin({
+                    cache: true,
+                    parallel: true,
+                    sourceMap: true
+                }),
+            ]
+        },
+        plugins: html_ejs_plugin().concat([
             new CleanWebpackPlugin(),
             new webpack.DefinePlugin({
                 'process.env':env
-            }),
-            new HtmlwebpackPlugin( {
-                template: './src/page/index.ejs',
-                filename: 'index.html',
-                inject: true,
-                hash: true,
-                minify:{
-                    removeAttributeQuotes:true,
-                    collapseWhitespace:true,
-                }
             }),
             new webpack.HashedModuleIdsPlugin(),
             new BundleAnalyzerPlugin({
@@ -80,7 +118,7 @@ module.exports = (env, argv)=>{
                     ignore: ['.*']
                 }
             ])
-        ],
+        ]),
         module:{
             rules:[
                 {
@@ -147,7 +185,8 @@ module.exports = (env, argv)=>{
         },
         resolve:{
             alias:{
-                '@':resolvePath('src')
+                '@':resolvePath('src'),
+                'common': resolvePath('src/js/lib/common.js')
             }
         }
     }

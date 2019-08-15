@@ -1,2 +1,5 @@
 import '@/style/index.scss'
-console.log('www ?i?')
+import '@/components/header/header.js'
+import '@/components/footer/footer.js'
+
+console.log('当前页面')
