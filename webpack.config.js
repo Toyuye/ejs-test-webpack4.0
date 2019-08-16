@@ -9,6 +9,7 @@ const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CopyWebapckPlugin = require('copy-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
 
 let  html_ejs_plugin = function(templateArr=[]) {
     let ejsArr = fs.readdirSync('./src/page')
@@ -45,15 +46,15 @@ let entries = function(map={}) {
     return map
 }
 
-
-entries()
 module.exports = (env, argv)=>{
+    const pluginsOptions = html_ejs_plugin()
     if(argv.mode === 'development') {
         console.log('开发模式')
+        pluginsOptions.push(new webpack.HotModuleReplacementPlugin())
         env = {
             NODE_ENV: '"development"',
             HTTP:{
-                BASE_URL:'"https://dev.api.toyuye.github.com"'
+                BASE_URL:'"https://dev.api.toyuye.github.com"'  
             }
         }
     }
@@ -94,14 +95,16 @@ module.exports = (env, argv)=>{
                     parallel: true,
                     sourceMap: true
                 }),
+                new OptimizeCssAssetsWebpackPlugin()
             ]
         },
-        plugins: html_ejs_plugin().concat([
+        plugins: pluginsOptions.concat([
             new CleanWebpackPlugin(),
             new webpack.DefinePlugin({
                 'process.env':env
             }),
             new webpack.HashedModuleIdsPlugin(),
+            
             new BundleAnalyzerPlugin({
                 analyzerMode: 'disabled',
                 analyzerHost: '127.0.0.1',
@@ -111,7 +114,7 @@ module.exports = (env, argv)=>{
                 filename: 'static/css/[name].css',
                 chunkFilename: 'static/css/[id].css'
             }),
-            new CopyWebapckPlugin([
+            new CopyWebapckPlugin([ 
                 {
                     from:path.resolve(__dirname, './static'),
                     to:'static',
