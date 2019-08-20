@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack-dev-server --mode development --color  --config ./webpack.config.js",
+    "dev": "webpack-dev-server --mode development --progress --color --config ./webpack.config.js",
     "test": "webpack --progress --mode production --userTest --color --config ./webpack.config.js ",
     "build": "webpack --progress --mode production --color --config ./webpack.config.js"
   },
@@ -46,5 +46,9 @@
     "iOS >= 8",
     "Firefox >= 20",
     "Android > 4.4"
-  ]
+  ],
+  "dependencies": {
+    "jquery": "^3.4.1",
+    "loadsh": "0.0.4"
+  }
 }

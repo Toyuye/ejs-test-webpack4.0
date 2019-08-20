@@ -23,12 +23,12 @@ let  html_ejs_plugin = function(templateArr=[]) {
                 inject: true,
                 hash: true,
                 minify:{
-                    removeAttributeQuotes:true,
-                    collapseWhitespace:true,
+                    removeAttributeQuotes:false,
+                    collapseWhitespace:false,
                 }
             }
-            if(filename in entries()) {
-                conf.chunks = [filename]
+            if(filename in entries()) {  
+                conf.chunks = ['vendor',filename]
             }
             templateArr.push(new HtmlwebpackPlugin(conf))
         }
@@ -80,17 +80,24 @@ module.exports = (env, argv)=>{
     return {
         context: path.resolve(__dirname, './'),
         devServer:{
-            contentBase: path.resolve(__dirname, './'),
+            contentBase: false,
             host:'127.0.0.1',
             port:'8888',
             open:true,
+            hot:true,
+            quiet:true,
+            watchOptions:{
+                poll:false
+            }
         },
         entry:webpackMerge(entries(), {}),
         output:{
             path: path.resolve(__dirname, 'dist'),
             filename: 'static/page/[name].js',
+            chunkFilename:'static/page/[name].chunk.js',
             publicPath: argv.mode==="development" ? '/' : "./"
         },
+        // devtool:'',
         optimization:{
             minimizer:[
                 new TerserPlugin({
@@ -99,7 +106,31 @@ module.exports = (env, argv)=>{
                     sourceMap: true
                 }),
                 new OptimizeCssAssetsWebpackPlugin()
-            ]
+            ],
+            splitChunks: {
+                chunks: 'async',
+                minSize: 30000,
+                maxSize: 0,
+                minChunks: 1,
+                maxAsyncRequests: 5,
+                maxInitialRequests: 3,
+                automaticNameDelimiter: '~',
+                automaticNameMaxLength: 30,
+                name: true,
+                cacheGroups: {
+                    vendors: {
+                        name:'vendor',
+                        test: /[\\/]node_modules[\\/]/,
+                        priority: -10,
+                        chunks:'all'
+                    },
+                    default: {
+                        minChunks: 2,
+                        priority: -20,
+                        reuseExistingChunk: true
+                    }
+                }
+            }
         },
         plugins: pluginsOptions.concat([
             new CleanWebpackPlugin(),
@@ -115,7 +146,7 @@ module.exports = (env, argv)=>{
             }),
             new MiniCssExtractPlugin({
                 filename: 'static/css/[name].css',
-                chunkFilename: 'static/css/[id].css'
+                chunkFilename: 'static/css/[name].[id].css'
             }),
             new CopyWebapckPlugin([ 
                 {
