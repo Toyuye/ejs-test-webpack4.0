@@ -27,6 +27,9 @@ let  html_ejs_plugin = function(templateArr=[]) {
                     collapseWhitespace:true,
                 }
             }
+            if(filename in entries()) {
+                conf.chunks = [filename]
+            }
             templateArr.push(new HtmlwebpackPlugin(conf))
         }
         
@@ -78,7 +81,7 @@ module.exports = (env, argv)=>{
         context: path.resolve(__dirname, './'),
         devServer:{
             contentBase: path.resolve(__dirname, './'),
-            host:'192.168.17.12',
+            host:'127.0.0.1',
             port:'8888',
             open:true,
         },
