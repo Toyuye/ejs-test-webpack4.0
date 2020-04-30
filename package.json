@@ -48,7 +48,7 @@
     "Android > 4.4"
   ],
   "dependencies": {
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "loadsh": "0.0.4"
   }
 }
